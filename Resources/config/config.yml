@@ -1,0 +1,6 @@
+plugin:
+  has_options: false
+
+  admin_tools:
+    - name: laurent_school_admin_tool
+      class: university

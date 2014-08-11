@@ -1,0 +1,3 @@
+laurent_admin_school_controller:
+    resource: "@LaurentSchoolBundle/Controller/AdminSchoolController.php"
+    type:     annotation
