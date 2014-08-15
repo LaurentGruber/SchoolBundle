@@ -3,6 +3,7 @@
 namespace Laurent\SchoolBundle\Listener;
 
 use Claroline\CoreBundle\Event\DisplayToolEvent;
+use Claroline\CoreBundle\Event\DisplayWidgetEvent;
 use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -28,7 +29,29 @@ class Listener
     /**
      * @DI\Observe("open_administration_tool_laurent_school_admin_tool")
      */
-    public function onOpen(DisplayToolEvent $event)
+    public function onOpenAdminTool(DisplayToolEvent $event)
+    {
+        $content= 'toto';
+        $event->setContent($content);
+        $event->stopPropagation();
+    }
+
+    /**
+     * @param DisplayWidgetEvent $event
+     * @DI\Observe("widget_laurent_school_prof_menu_widget")
+     */
+    public function onDisplayProfMenu(DisplayWidgetEvent $event)
+    {
+        $twig = $this->container->get('templating');
+        $content = $twig->render('LaurentSchoolBundle::profMenuWidgetLayout.html.twig');
+        $event->setContent($content);
+        $event->stopPropagation();
+    }
+    /**
+     * @param DisplayWidgetEvent $event
+     * @DI\Observe("widget_laurent_school_prof_menu_classes_widget")
+     */
+    public function onDisplayProfMenuClasses(DisplayWidgetEvent $event)
     {
         $event->setContent('Toto');
         $event->stopPropagation();
