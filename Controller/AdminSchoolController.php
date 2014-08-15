@@ -6,18 +6,46 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
+use Laurent\SchoolBundle\Entity\Classe;
+use JMS\DiExtraBundle\Annotation as DI;
+use Claroline\CoreBundle\Library\Workspace\Configuration;
 
 class AdminSchoolController extends Controller
 {
     /**
-     * @EXT\Route("/admin", name="laurentAdminSchool")
-     * @EXT\Template("LaurentSchoolBundle::adminSchoolView.html.twig")
+     * @EXT\Route("/admin/menu", name="laurentAdminSchoolMenu")
+     * @EXT\Template("LaurentSchoolBundle::adminSchoolMenu.html.twig")
      */
-    public function adminSchoolAction(Request $request)
+
+    public  function adminSchoolMenuAction()
     {
+        return array();
+    }
+
+    /**
+     * @EXT\Route("/admin/cs", name="laurentAdminSchoolCS")
+     * @EXT\Template("LaurentSchoolBundle::cs.html.twig")
+     */
+    public function adminSchoolCSAction()
+    {
+        return array();
+    }
+
+    /**
+     * @EXT\Route("/import/classes", name="laurentAdminSchoolImportClasses")
+     * @EXT\Template("LaurentSchoolBundle::adminSchoolImportView.html.twig")
+     */
+    public function adminSchoolImportClassesAction(Request $request)
+    {
+        $em = $this->get('doctrine')->getManager();
+        $repository = $em->getRepository('LaurentSchoolBundle:Classe');
+        $templateDir=$this->container->getParameter('claroline.param.templates_directory');
+        $this->workspaceManager = $this->container->get('claroline.manager.workspace_manager');
+        $this->userManager = $this->container->get('claroline.manager.user_manager');
+
         $form = $this->createFormBuilder()
-            ->add('fichier', 'file')
-            ->add('envoyer', 'submit')
+            ->add('fichier', 'file', array('label' => 'Fichier CSV'))
+            ->add('envoyer', 'submit', array('attr' => array('class' => 'btn btn-primary')))
             ->getForm()
          ;
 
@@ -25,65 +53,58 @@ class AdminSchoolController extends Controller
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
+                $messages = array();
                 $fichier = $form->get('fichier')->getNormData();
+                $file = fopen($fichier->getPathname(), 'r');
+                while (($classeCsv = fgetcsv($file)) !== FALSE) {
+                    $code = $classeCsv[0];
+                    $name = $classeCsv[1];
+                    $degre = $classeCsv[2];
+                    $annee = $classeCsv[3];
+                    if (!$repository->findOneByCode($code)){
+                        $config = Configuration::fromTemplate(
+                            $templateDir . 'default.zip'
+                        );
+                        $config->setWorkspaceName($name);
+                        $config->setWorkspaceCode($code);
+                        $config->setDisplayable(true);
+                        $config->setSelfRegistration(false);
+                        $config->setSelfUnregistration(false);
+                        $config->setWorkspaceDescription('');
 
+                        $user = $this->userManager->getUserById(1);
+                        $this->workspaceManager->create($config, $user);
 
-                return $this->redirect('http://www.google.be');
+                        $classe = new Classe;
+                        $classe->setCode($code);
+                        $classe->setName($name);
+                        $classe->setDegre($degre);
+                        $classe->setAnnee($annee);
+                        $em->persist($classe);
+                        $em->flush();
+
+                        $messages[] = "La classe $code a bien été ajoutée et l'espace d'activité correspondant créé.";
+                    }
+                    else {
+                        $messages[] = "<b>La classe $code existe déjà rien n'a été fait.</b>";
+                    }
+                }
+                fclose($file);
+                $content = $this->renderView('LaurentSchoolBundle::adminSchoolImportView.html.twig',
+                    array('form' => $form->createView(),
+                        'titre' => 'classes',
+                        'action' => $this->generateUrl('laurentAdminSchoolImportClasses'),
+                        'messages' => $messages
+                    ));
+
+                return new Response($content);
             }
         }
 
-        return array('form' => $form->createView());
+        return array('form' => $form->createView(),
+            'titre' => 'classes',
+            'action' => $this->generateUrl('laurentAdminSchoolImportClasses'),
+            'messages' => ''
+        );
     }
-}
-
-/**
- * Import users from an array.
- * There is the array format:
- * @todo some batch processing
- *
- * array(
- *     array(firstname, lastname, username, pwd, email, code, phone),
- *     array(firstname2, lastname2, username2, pwd2, email2, code2, phone2),
- *     array(firstname3, lastname3, username3, pwd3, email3, code3, phone3),
- * )
- *
- * @param array $users
- *
- * @return array
- */
-public function importUsers(array $users)
-{
-    $roleUser = $this->roleManager->getRoleByName('ROLE_USER');
-    $max = $roleUser->getMaxUsers();
-    $total = $this->countUsersByRoleIncludingGroup($roleUser);
-
-    if ($total + count($users) > $max) {
-        throw new AddRoleException();
-    }
-
-    $lg = $this->platformConfigHandler->getParameter('locale_language');
-    $this->objectManager->startFlushSuite();
-
-    foreach ($users as $user) {
-        $firstName = $user[0];
-        $lastName = $user[1];
-        $username = $user[2];
-        $pwd = $user[3];
-        $email = $user[4];
-        $code = isset($user[5])? $user[5] : null;
-        $phone = isset($user[6])? $user[6] : null;
-
-        $newUser = $this->objectManager->factory('Claroline\CoreBundle\Entity\User');
-        $newUser->setFirstName($firstName);
-        $newUser->setLastName($lastName);
-        $newUser->setUsername($username);
-        $newUser->setPlainPassword($pwd);
-        $newUser->setMail($email);
-        $newUser->setAdministrativeCode($code);
-        $newUser->setPhone($phone);
-        $newUser->setLocale($lg);
-        $this->createUser($newUser);
-    }
-
-    $this->objectManager->endFlushSuite();
 }
