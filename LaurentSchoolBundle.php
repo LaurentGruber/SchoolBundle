@@ -15,7 +15,7 @@ class LaurentSchoolBundle extends PluginBundle
     }
     public function hasMigrations()
     {
-        return false;
+        return true;
     }
 }
 

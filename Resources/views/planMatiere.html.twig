@@ -1,0 +1,54 @@
+{% extends "ClarolineCoreBundle:Desktop:layout.html.twig" %}
+
+{% block section_content %}
+<div class="panel-heading" data-pl-id="{{ pl.getId() }}">
+    <h3 class="panel-title">{{ pl.name }}</h3>
+</div>
+<div class="panel-body">
+
+    <table class="table table-bordered">
+        <tr><td>Matiere :</td><td></td></tr>
+        <tr><td>Nombre de période annuel :</td><td>{{ nbH }}</td></tr>
+    </table>
+
+    <table class="table">
+        {% for chapitre in chapitres %}
+            <tr><td colspan="2"><a href=""> {{ chapitre.name }}</a></td><td>{{ chapitre.nbPeriode }}</td></tr>
+            {% for pointMatiere in chapitre.pointMatiere  %}
+                        <tr><td></td><td>{{ pointMatiere.name }}</td><td></td></tr>
+            {% endfor %}
+            <tr><td></td><td colspan="2"><div class="btn btn-default add-point-matiere-btn" role="button" data-chap-id="{{ chapitre.getId() }}><i class="fa fa-plus-circle"><i class="fa fa-plus-circle">Ajouter un point matière</i></div></td></tr>
+        {% endfor %}
+        <tr><th colspan="2">Total période</th><th>{{ total }}</th></tr>
+    </table>
+
+    <!-- box pour l'ajout -->
+    <div id="form-modal-box" class="modal fade" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="form-modal-title"></h3>
+                </div>
+                <div id="form-modal-body" class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel-footer">
+    <div class="btn btn-default add-plan-matiere-chap-btn" role="button">
+        <i class="fa fa-plus-circle">Ajouter un chapitre</i>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script
+            src='{{ asset('bundles/laurentschool/js/planMatiere.js') }}'
+            type="text/javascript">
+    </script>
+{% endblock %}
+

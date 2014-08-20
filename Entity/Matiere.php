@@ -5,10 +5,10 @@ namespace Laurent\SchoolBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="Laurent\SchoolBundle\Repository\ClasseRepository")
- * @ORM\Table(name="laurent_school_classe")
+ * @ORM\Entity()
+ * @ORM\Table(name="laurent_school_matiere")
  */
-class Classe
+class Matiere
 {
     const DEGRE_1 = 1;
     const DEGRE_2 = 2;
@@ -24,11 +24,6 @@ class Classe
     /**
      * @ORM\Column()
      */
-    private $code;
-
-    /**
-     * @ORM\Column()
-     */
     private $name;
 
     /**
@@ -39,58 +34,33 @@ class Classe
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $annee;
+    private $nbPeriode;
 
     /**
-     * @ORM\OneToOne(targetEntity="Claroline\CoreBundle\Entity\Workspace\Workspace")
-     */
-    private $Workspace;
-
-    /**
-     * @var User $eleves
-     *
-     * @ORM\ManyToMany(
-     *     targetEntity="Claroline\CoreBundle\Entity\User",
-     *     cascade={"persist"}
+     * @ORM\OneToMany(
+     *      targetEntity="Laurent\SchoolBundle\Entity\PlanMatiere",
+     *      mappedBy="matiere"
      * )
-     * @ORM\JoinColumn(onDelete="CASCADE", nullable=false)
-     * @ORM\joinTable(name="laurent_school_classe_user")
      */
-    private $eleves;
+    private $planMatiere;
 
     /**
-     * @param mixed $annee
+     * @param mixed $planMatiere
      */
-    public function setAnnee($annee)
+    public function setPlanMatiere($planMatiere)
     {
-        $this->annee = $annee;
+        $this->planMatiere = $planMatiere;
     }
 
     /**
-     * @return mixed
+     * @return \Doctrine\Common\Collections\Collection
      */
-    public function getAnnee()
+    public function getPlanMatiere()
     {
-        return $this->annee;
+        return $this->planMatiere;
     }
 
-    /**
-     * @param mixed $code
-     */
-    public function setCode($code)
-    {
-        $this->code = $code;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCode()
-    {
-        return $this->code;
-    }
-
-    /**
+     /**
      * @param mixed $degre
      */
     public function setDegre($degre)
@@ -126,7 +96,6 @@ class Classe
         }
     }
 
-
     /**
      * @param mixed $id
      */
@@ -160,18 +129,22 @@ class Classe
     }
 
     /**
-     * @param mixed $Workspace
+     * @param mixed $nbPeriode
      */
-    public function setWorkspace($Workspace)
+    public function setNbPeriode($nbPeriode)
     {
-        $this->Workspace = $Workspace;
+        $this->nbPeriode = $nbPeriode;
     }
 
     /**
      * @return mixed
      */
-    public function getWorkspace()
+    public function getNbPeriode()
     {
-        return $this->Workspace;
+        return $this->nbPeriode;
     }
+
+
+
+
 }

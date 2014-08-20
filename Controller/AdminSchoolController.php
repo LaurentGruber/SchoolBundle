@@ -9,16 +9,40 @@ use Symfony\Component\HttpFoundation\Request;
 use Laurent\SchoolBundle\Entity\Classe;
 use JMS\DiExtraBundle\Annotation as DI;
 use Claroline\CoreBundle\Library\Workspace\Configuration;
+use Claroline\CoreBundle\Manager\ToolManager;
+use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class AdminSchoolController extends Controller
 {
+    private $sc;
+    private $toolManager;
+
+    /**
+     * @DI\InjectParams({
+     *      "sc"                 = @DI\Inject("security.context"),
+     *      "toolManager"        = @DI\Inject("claroline.manager.tool_manager")
+     * })
+     */
+
+    public function __construct(
+        SecurityContextInterface $sc,
+        ToolManager $toolManager
+    )
+    {
+        $this->sc                 = $sc;
+        $this->toolManager        = $toolManager;
+        $this->workspaceAdminTool = $this->toolManager->getAdminToolByName('laurent_school_admin_tool');
+    }
+
+
     /**
      * @EXT\Route("/admin/menu", name="laurentAdminSchoolMenu")
      * @EXT\Template("LaurentSchoolBundle::adminSchoolMenu.html.twig")
      */
-
     public  function adminSchoolMenuAction()
     {
+        $this->checkOpen();
         return array();
     }
 
@@ -37,11 +61,14 @@ class AdminSchoolController extends Controller
      */
     public function adminSchoolImportClassesAction(Request $request)
     {
+        $this->checkOpen();
         $em = $this->get('doctrine')->getManager();
+        $om = $this->container->get('claroline.persistence.object_manager');
         $repository = $em->getRepository('LaurentSchoolBundle:Classe');
         $templateDir=$this->container->getParameter('claroline.param.templates_directory');
         $this->workspaceManager = $this->container->get('claroline.manager.workspace_manager');
         $this->userManager = $this->container->get('claroline.manager.user_manager');
+        $this->workspaceRepo = $om->getRepository('ClarolineCoreBundle:Workspace\Workspace');
 
         $form = $this->createFormBuilder()
             ->add('fichier', 'file', array('label' => 'Fichier CSV'))
@@ -73,13 +100,15 @@ class AdminSchoolController extends Controller
                         $config->setWorkspaceDescription('');
 
                         $user = $this->userManager->getUserById(1);
-                        $this->workspaceManager->create($config, $user);
+                        $workspace = $this->workspaceManager->create($config, $user);
+
 
                         $classe = new Classe;
                         $classe->setCode($code);
                         $classe->setName($name);
                         $classe->setDegre($degre);
                         $classe->setAnnee($annee);
+                        $classe->setWorkspace($workspace);
                         $em->persist($classe);
                         $em->flush();
 
@@ -106,5 +135,14 @@ class AdminSchoolController extends Controller
             'action' => $this->generateUrl('laurentAdminSchoolImportClasses'),
             'messages' => ''
         );
+    }
+
+    private function checkOpen()
+    {
+        if ($this->sc->isGranted('OPEN', $this->workspaceAdminTool)) {
+            return true;
+        }
+
+        throw new AccessDeniedException();
     }
 }

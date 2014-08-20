@@ -1,3 +1,7 @@
 laurent_admin_school_controller:
     resource: "@LaurentSchoolBundle/Controller/AdminSchoolController.php"
     type:     annotation
+
+laurent_plan_matiere_controller:
+    resource: "@LaurentSchoolBundle/Controller/PlanMatiereSchoolController.php"
+    type:     annotation

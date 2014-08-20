@@ -1,6 +1,19 @@
+{% from _self import renderPager %}
+
+{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
+
+{% if isDesktop() %}
+    {% set layout = "ClarolineCoreBundle:Desktop:layout.html.twig" %}
+{% endif %}
+
+{% extends layout %}
+
+{% block section_content  %}
 <br />
 <br />
 <br />
 <br />
 <br />
 <center><h1>Comming SOON</h1></center>
+
+{% endblock %}

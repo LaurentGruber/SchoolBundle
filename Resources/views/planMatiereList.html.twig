@@ -1,0 +1,46 @@
+{% extends "ClarolineCoreBundle:Desktop:layout.html.twig" %}
+
+{% block section_content %}
+<div class="panel-heading">
+    <h3 class="panel-title">Plan de matière</h3>
+</div>
+<div class="panel-body">
+
+    <table class="table table-hover">
+        <tr><th colspan="2">Liste de vos plans matière</th></tr>
+    {% for plmatiere in plmatieres %}
+       <tr><td><a href="{{ path ('laurentSchoolPlanMatiere', {'planMatiere' : plmatiere.id()}) }}"> {{ plmatiere.name }}</a></td><td> </td></tr>
+    {% endfor %}
+    </table>
+
+    <!-- box pour l'ajout -->
+    <div id="form-modal-box" class="modal fade" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="form-modal-title"></h3>
+                </div>
+                <div id="form-modal-body" class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel-footer">
+    <div class="btn btn-default add-plan-matiere-btn" role="button">
+        <i class="fa fa-plus-circle">Ajouter</i>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script
+            src='{{ asset('bundles/laurentschool/js/planMatiereList.js') }}'
+            type="text/javascript">
+    </script>
+{% endblock %}
+

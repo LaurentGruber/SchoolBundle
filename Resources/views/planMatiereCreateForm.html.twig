@@ -1,0 +1,20 @@
+<form
+        role="form"
+        id="create-planmatiere-form"
+        class="form-horizontal"
+        action="{{ path('laurentSchoolPlanMatiereCreate') }}"
+        method="post"
+        {{ form_enctype(form) }}
+        >
+    <div class="panel-body">
+        {{ form_widget(form) }}
+    </div>
+    <div class="form-actions panel-footer">
+        <button id="form-create-planmatiere-ok-btn" type="submit" class="btn btn-primary">
+            {{ 'ok'|trans({}, 'platform') }}
+        </button>
+        <button id="form-cancel-btn" type="button" class="btn btn-default">
+            {{ 'cancel'|trans({}, 'platform') }}
+        </button>
+    </div>
+</form>
