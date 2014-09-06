@@ -169,7 +169,7 @@ class AdminSchoolController extends Controller
      */
     public function adminSchoolImportElevesInClassesAction(Request $request)
     {
-        $em = $this->get('doctrine')->getManager();
+/*        $em = $this->get('doctrine')->getManager();
         $this->checkOpen();
 
         $form = $this->createFormBuilder()
@@ -223,7 +223,7 @@ class AdminSchoolController extends Controller
                 'messages' => ''
             );
 
-        }
+        }*/
     }
 
     private function checkOpen()
