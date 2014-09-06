@@ -56,15 +56,6 @@ class Listener
         $event->setContent($content);
         $event->stopPropagation();
     }
-    /**
-     * @param DisplayWidgetEvent $event
-     * @DI\Observe("widget_laurent_school_prof_menu_classes_widget")
-     */
-    public function onDisplayProfMenuClasses(DisplayWidgetEvent $event)
-    {
-        $event->setContent('Toto');
-        $event->stopPropagation();
-    }
 
     private function redirect($params, $event)
     {

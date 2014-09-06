@@ -15,7 +15,7 @@
         {% for chapitre in chapitres %}
             <tr><td colspan="2"><a href=""> {{ chapitre.name }}</a></td><td>{{ chapitre.nbPeriode }}</td></tr>
             {% for pointMatiere in chapitre.pointMatiere  %}
-                        <tr><td></td><td>{{ pointMatiere.name }}</td><td></td></tr>
+                        <tr><td></td><td>{{ pointMatiere.name }}</td><td>{{ pointMatiere.nbPeriode }}</td></tr>
             {% endfor %}
             <tr><td></td><td colspan="2"><div class="btn btn-default add-point-matiere-btn" role="button" data-chap-id="{{ chapitre.getId() }}><i class="fa fa-plus-circle"><i class="fa fa-plus-circle">Ajouter un point matière</i></div></td></tr>
         {% endfor %}

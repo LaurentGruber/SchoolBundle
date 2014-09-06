@@ -42,6 +42,14 @@ class PointMatiere
      */
     private $chapitre;
 
+    /**
+     * @ORM\ManyToMany(
+     *      targetEntity="Claroline\CoreBundle\Entity\Competence\Competence",
+     * )
+     * @ORM\joinTable(name="laurent_school_pointmatiere_competence")
+     */
+    private $competence;
+
     public function __construct()
     {
         $this->chapitre = new ArrayCollection();
@@ -70,6 +78,24 @@ class PointMatiere
     {
         return $this->chapitre;
     }
+
+    /**
+     * @param mixed $competence
+     */
+    public function setCompetence($competence)
+    {
+        $this->competence = $competence;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCompetence()
+    {
+        return $this->competence;
+    }
+
+
 
     /**
      * @param mixed $id

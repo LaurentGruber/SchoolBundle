@@ -17,6 +17,10 @@ class LaurentSchoolBundle extends PluginBundle
     {
         return true;
     }
+
+    public function getRequiredFixturesDirectory($env){
+        return 'DataFixtures/Required';
+    }
 }
 
 ?>

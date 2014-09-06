@@ -8,9 +8,9 @@ use Doctrine\DBAL\Schema\Schema;
 /**
  * Auto-generated migration based on mapping information: modify it with caution
  *
- * Generation date: 2014/08/20 11:03:14
+ * Generation date: 2014/09/07 12:04:17
  */
-class Version20140820230313 extends AbstractMigration
+class Version20140907000416 extends AbstractMigration
 {
     public function up(Schema $schema)
     {
@@ -18,8 +18,11 @@ class Version20140820230313 extends AbstractMigration
             CREATE TABLE laurent_school_plan_matiere (
                 id INT AUTO_INCREMENT NOT NULL, 
                 matiere_id INT DEFAULT NULL, 
+                referentiel_id INT DEFAULT NULL, 
                 name VARCHAR(255) NOT NULL, 
+                refProgramme VARCHAR(255) NOT NULL, 
                 INDEX IDX_C1FE0911F46CD258 (matiere_id), 
+                INDEX IDX_C1FE0911805DB139 (referentiel_id), 
                 PRIMARY KEY(id)
             ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
         ");
@@ -53,6 +56,15 @@ class Version20140820230313 extends AbstractMigration
             ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
         ");
         $this->addSql("
+            CREATE TABLE laurent_school_pointmatiere_competence (
+                pointmatiere_id INT NOT NULL, 
+                competence_id INT NOT NULL, 
+                INDEX IDX_1C33BE691ADE166B (pointmatiere_id), 
+                INDEX IDX_1C33BE6915761DAB (competence_id), 
+                PRIMARY KEY(pointmatiere_id, competence_id)
+            ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
+        ");
+        $this->addSql("
             CREATE TABLE laurent_school_chapitre_plan_matiere (
                 id INT AUTO_INCREMENT NOT NULL, 
                 name VARCHAR(255) NOT NULL, 
@@ -82,7 +94,9 @@ class Version20140820230313 extends AbstractMigration
                 degre INT DEFAULT NULL, 
                 annee INT DEFAULT NULL, 
                 Workspace_id INT DEFAULT NULL, 
+                Group_id INT DEFAULT NULL, 
                 UNIQUE INDEX UNIQ_CBC542A19AE5D1E7 (Workspace_id), 
+                UNIQUE INDEX UNIQ_CBC542A1722BB11 (Group_id), 
                 PRIMARY KEY(id)
             ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
         ");
@@ -99,6 +113,11 @@ class Version20140820230313 extends AbstractMigration
             ALTER TABLE laurent_school_plan_matiere 
             ADD CONSTRAINT FK_C1FE0911F46CD258 FOREIGN KEY (matiere_id) 
             REFERENCES laurent_school_matiere (id)
+        ");
+        $this->addSql("
+            ALTER TABLE laurent_school_plan_matiere 
+            ADD CONSTRAINT FK_C1FE0911805DB139 FOREIGN KEY (referentiel_id) 
+            REFERENCES claro_competence (id)
         ");
         $this->addSql("
             ALTER TABLE laurent_school_planmatiere_user 
@@ -125,6 +144,18 @@ class Version20140820230313 extends AbstractMigration
             ON DELETE CASCADE
         ");
         $this->addSql("
+            ALTER TABLE laurent_school_pointmatiere_competence 
+            ADD CONSTRAINT FK_1C33BE691ADE166B FOREIGN KEY (pointmatiere_id) 
+            REFERENCES laurent_school_point_matiere (id) 
+            ON DELETE CASCADE
+        ");
+        $this->addSql("
+            ALTER TABLE laurent_school_pointmatiere_competence 
+            ADD CONSTRAINT FK_1C33BE6915761DAB FOREIGN KEY (competence_id) 
+            REFERENCES claro_competence (id) 
+            ON DELETE CASCADE
+        ");
+        $this->addSql("
             ALTER TABLE laurent_school_chapitre_plan_matiere 
             ADD CONSTRAINT FK_3D3A30C746738D80 FOREIGN KEY (planMatiere_id) 
             REFERENCES laurent_school_plan_matiere (id)
@@ -133,6 +164,11 @@ class Version20140820230313 extends AbstractMigration
             ALTER TABLE laurent_school_classe 
             ADD CONSTRAINT FK_CBC542A19AE5D1E7 FOREIGN KEY (Workspace_id) 
             REFERENCES claro_workspace (id)
+        ");
+        $this->addSql("
+            ALTER TABLE laurent_school_classe 
+            ADD CONSTRAINT FK_CBC542A1722BB11 FOREIGN KEY (Group_id) 
+            REFERENCES claro_group (id)
         ");
         $this->addSql("
             ALTER TABLE laurent_school_classe_user 
@@ -163,6 +199,10 @@ class Version20140820230313 extends AbstractMigration
             DROP FOREIGN KEY FK_F90F73EC1ADE166B
         ");
         $this->addSql("
+            ALTER TABLE laurent_school_pointmatiere_competence 
+            DROP FOREIGN KEY FK_1C33BE691ADE166B
+        ");
+        $this->addSql("
             ALTER TABLE laurent_school_pointmatiere_chapitreplanmatiere 
             DROP FOREIGN KEY FK_F90F73EC5E680512
         ");
@@ -185,6 +225,9 @@ class Version20140820230313 extends AbstractMigration
         ");
         $this->addSql("
             DROP TABLE laurent_school_pointmatiere_chapitreplanmatiere
+        ");
+        $this->addSql("
+            DROP TABLE laurent_school_pointmatiere_competence
         ");
         $this->addSql("
             DROP TABLE laurent_school_chapitre_plan_matiere

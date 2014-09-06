@@ -5,13 +5,39 @@ namespace Laurent\SchoolBundle\Controller;
 use Laurent\SchoolBundle\Entity\ChapitrePlanMatiere;
 use Laurent\SchoolBundle\Entity\PlanMatiere;
 use Laurent\SchoolBundle\Entity\PointMatiere;
+use Claroline\CoreBundle\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
+use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Claroline\CoreBundle\Persistence\ObjectManager;
+use Claroline\CoreBundle\Manager\UserManager;
+
 
 class PlanMatiereSchoolController extends Controller
 {
+    private $om;
+    private $sc;
+    private $userManager;
+
+    /**
+     * @DI\InjectParams({
+     *      "om"              = @DI\Inject("claroline.persistence.object_manager"),
+     *      "userManager"        = @DI\Inject("claroline.manager.user_manager"),
+     *      "sc"                 = @DI\Inject("security.context")
+     * })
+     */
+
+    public function __construct(ObjectManager $om, SecurityContextInterface $sc, UserManager $userManager)
+    {
+        $this->om                 = $om;
+        $this->sc                 = $sc;
+        $this->userManager        = $userManager;
+        $this->groupRepo          = $om->getRepository('ClarolineCoreBundle:Group');
+    }
 
     /**
      * @EXT\Route("/pl", name="laurentSchoolPlanMatiereList")
@@ -20,8 +46,9 @@ class PlanMatiereSchoolController extends Controller
 
     public  function planMatiereListAction()
     {
+        $this->checkOpen();
         $plRepository = $this->getDoctrine()->getRepository('LaurentSchoolBundle:PlanMatiere');
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->sc->getToken()->getUser();
         $plmatieres = $plRepository->findUserPlanMatiere($user);
 
         return array('plmatieres'=> $plmatieres);
@@ -56,6 +83,7 @@ class PlanMatiereSchoolController extends Controller
                          'required' => false
                      )
                 )
+            ->add('refProgramme', 'text', array('label' => 'Référence programme'))
             ->getForm()
         ;
 
@@ -89,6 +117,7 @@ class PlanMatiereSchoolController extends Controller
                     'required' => false
                 )
             )
+            ->add('refProgramme', 'text', array('label' => 'Référence programme'))
             ->getForm()
             ;
         $form->handleRequest($request);
@@ -99,6 +128,7 @@ class PlanMatiereSchoolController extends Controller
             $planMatiere = new PlanMatiere;
             $planMatiere->setName($form["name"]->getData());
             $planMatiere->setMatiere($form["matiere"]->getData());
+            $planMatiere->setRefProgramme($form["refProgramme"]->getData());
             $user = $this->get('security.context')->getToken()->getUser();
             $planMatiere->addProf($user);
             $em->persist($planMatiere);
@@ -117,6 +147,7 @@ class PlanMatiereSchoolController extends Controller
 
     public  function planMatiereAction(PlanMatiere $planMatiere)
     {
+        $this->checkOpen();
         $pl = $planMatiere;
         $chapitres = $this->getDoctrine()->getManager()->getRepository('LaurentSchoolBundle:ChapitrePlanMatiere')->findChapitrePlanMatiere($pl);
         $total = 0;
@@ -236,5 +267,57 @@ class PlanMatiereSchoolController extends Controller
         return array('form' => $form->createView(), 'chap' => $chap);
     }
 
+    /**
+     * @EXT\Route(
+     *     "/prof/users/page/{page}",
+     *     name="laurent_plan_matiere_list_prof",
+     *     options={"expose"=true},
+     *     defaults={"page"=1, "search"=""}
+     * )
+     * @EXT\Method("GET")
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\Template()
+     *
+     *
+     * Displays the list of users that the current user can send a message to,
+     * optionally filtered by a search on first name and last name
+     *
+     * @param integer $page
+     * @param string  $search
+     * @param User    $user
+     *
+     * @return Response
+     */
+    public function profUsersListAction(User $user, $page, $search)
+    {
+        $trimmedSearch = trim($search);
+        #$group = $this->groupRepo->findOneByName('Prof');
+        $group = $this->groupRepo->findOneBy(array('id' => '1'));
+        #$logger = $this->get('logger');
+        #$logger->info('Local variables', get_defined_vars());
+
+
+        if ($user->hasRole('ROLE_PROF') or ($user->hasRole('ROLE_ADMIN'))) {
+            if ($trimmedSearch === '') {
+                #$users = $this->userManager->getUsersByGroup($group ,$page);
+                $users = $this->userManager->getAllUsers($page, $max = 50);
+            } else {
+                $users = $this->userManager
+                    ->getAllUsersBySearch($page, $trimmedSearch);
+            }
+        }
+
+        return array('users' => $users, 'search' => $search);
+    }
+
+
+    private function checkOpen()
+    {
+        if ($this->sc->isGranted('ROLE_PROF')) {
+            return true;
+        }
+
+        throw new AccessDeniedException();
+    }
 
 }

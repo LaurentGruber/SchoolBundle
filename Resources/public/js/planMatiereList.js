@@ -28,6 +28,21 @@ function closeFormModal()
         });
     });
 
+$('.profListButton').on('click', function () {
+    $.ajax({
+        url: Routing.generate(
+            'laurent_plan_matiere_list_prof'
+        ),
+        type: 'GET',
+        success: function (datas) {
+            openFormModal(
+                "Ajouter Prof",
+                datas
+            );
+        }
+    });
+});
+
     // Click on OK button of the Create Widget instance form modal
     $('body').on('click', '#form-create-planmatiere-ok-btn', function (e) {
         e.stopImmediatePropagation();

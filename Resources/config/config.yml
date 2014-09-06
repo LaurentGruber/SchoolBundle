@@ -8,9 +8,3 @@ plugin:
   widgets:
     - name: laurent_school_prof_menu_widget
       is_configurable: false
-
-  tools:
-    - name: laurent_school_prof_menu_tool
-      class: info-circle
-      is_displayable_in_workspace: false
-      is_displayable_in_desktop: true

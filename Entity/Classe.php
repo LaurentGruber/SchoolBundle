@@ -47,6 +47,11 @@ class Classe
     private $Workspace;
 
     /**
+     * @ORM\OneToOne(targetEntity="Claroline\CoreBundle\Entity\Group")
+     */
+    private $Group;
+
+    /**
      * @var User $eleves
      *
      * @ORM\ManyToMany(
@@ -174,4 +179,21 @@ class Classe
     {
         return $this->Workspace;
     }
+
+    /**
+     * @param mixed $Group
+     */
+    public function setGroup($Group)
+    {
+        $this->Group = $Group;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGroup()
+    {
+        return $this->Group;
+    }
+
 }

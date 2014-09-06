@@ -8,9 +8,9 @@ use Doctrine\DBAL\Schema\Schema;
 /**
  * Auto-generated migration based on mapping information: modify it with caution
  *
- * Generation date: 2014/08/20 11:03:14
+ * Generation date: 2014/09/07 12:04:17
  */
-class Version20140820230313 extends AbstractMigration
+class Version20140907000416 extends AbstractMigration
 {
     public function up(Schema $schema)
     {
@@ -18,12 +18,17 @@ class Version20140820230313 extends AbstractMigration
             CREATE TABLE laurent_school_plan_matiere (
                 id INTEGER NOT NULL, 
                 matiere_id INTEGER DEFAULT NULL, 
+                referentiel_id INTEGER DEFAULT NULL, 
                 name VARCHAR(255) NOT NULL, 
+                refProgramme VARCHAR(255) NOT NULL, 
                 PRIMARY KEY(id)
             )
         ");
         $this->addSql("
             CREATE INDEX IDX_C1FE0911F46CD258 ON laurent_school_plan_matiere (matiere_id)
+        ");
+        $this->addSql("
+            CREATE INDEX IDX_C1FE0911805DB139 ON laurent_school_plan_matiere (referentiel_id)
         ");
         $this->addSql("
             CREATE TABLE laurent_school_planmatiere_user (
@@ -63,6 +68,19 @@ class Version20140820230313 extends AbstractMigration
             CREATE INDEX IDX_F90F73EC5E680512 ON laurent_school_pointmatiere_chapitreplanmatiere (chapitreplanmatiere_id)
         ");
         $this->addSql("
+            CREATE TABLE laurent_school_pointmatiere_competence (
+                pointmatiere_id INTEGER NOT NULL, 
+                competence_id INTEGER NOT NULL, 
+                PRIMARY KEY(pointmatiere_id, competence_id)
+            )
+        ");
+        $this->addSql("
+            CREATE INDEX IDX_1C33BE691ADE166B ON laurent_school_pointmatiere_competence (pointmatiere_id)
+        ");
+        $this->addSql("
+            CREATE INDEX IDX_1C33BE6915761DAB ON laurent_school_pointmatiere_competence (competence_id)
+        ");
+        $this->addSql("
             CREATE TABLE laurent_school_chapitre_plan_matiere (
                 id INTEGER NOT NULL, 
                 name VARCHAR(255) NOT NULL, 
@@ -94,11 +112,15 @@ class Version20140820230313 extends AbstractMigration
                 degre INTEGER DEFAULT NULL, 
                 annee INTEGER DEFAULT NULL, 
                 Workspace_id INTEGER DEFAULT NULL, 
+                Group_id INTEGER DEFAULT NULL, 
                 PRIMARY KEY(id)
             )
         ");
         $this->addSql("
             CREATE UNIQUE INDEX UNIQ_CBC542A19AE5D1E7 ON laurent_school_classe (Workspace_id)
+        ");
+        $this->addSql("
+            CREATE UNIQUE INDEX UNIQ_CBC542A1722BB11 ON laurent_school_classe (Group_id)
         ");
         $this->addSql("
             CREATE TABLE laurent_school_classe_user (
@@ -128,6 +150,9 @@ class Version20140820230313 extends AbstractMigration
         ");
         $this->addSql("
             DROP TABLE laurent_school_pointmatiere_chapitreplanmatiere
+        ");
+        $this->addSql("
+            DROP TABLE laurent_school_pointmatiere_competence
         ");
         $this->addSql("
             DROP TABLE laurent_school_chapitre_plan_matiere
