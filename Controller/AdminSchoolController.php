@@ -2,6 +2,7 @@
 
 namespace Laurent\SchoolBundle\Controller;
 
+use Claroline\CoreBundle\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
@@ -12,6 +13,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Claroline\CoreBundle\Library\Workspace\Configuration;
 use Claroline\CoreBundle\Manager\ToolManager;
 use Claroline\CoreBundle\Manager\RoleManager;
+use Claroline\CoreBundle\Manager\UserManager;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -21,27 +23,33 @@ class AdminSchoolController extends Controller
     private $sc;
     private $toolManager;
     private $roleManager;
+    private $userManager;
+    private $om;
 
     /**
      * @DI\InjectParams({
      *      "sc"                 = @DI\Inject("security.context"),
      *      "toolManager"        = @DI\Inject("claroline.manager.tool_manager"),
-     *      "roleManager"        = @DI\Inject("claroline.manager.role_manager")
+     *      "roleManager"        = @DI\Inject("claroline.manager.role_manager"),
+     *      "userManager"        = @DI\Inject("claroline.manager.user_manager"),
+     *      "om"                 = @DI\Inject("claroline.persistence.object_manager")
      * })
      */
 
     public function __construct(
         SecurityContextInterface $sc,
         ToolManager $toolManager,
-        RoleManager $roleManager
+        RoleManager $roleManager,
+        UserManager $userManager,
+        ObjectManager $om
     )
     {
         $this->sc                 = $sc;
         $this->toolManager        = $toolManager;
         $this->roleManager        = $roleManager;
         $this->workspaceAdminTool = $this->toolManager->getAdminToolByName('laurent_school_admin_tool');
-        $this->userManager = $this->container->get('claroline.manager.user_manager');
-        $this->om = $this->container->get('claroline.persistence.object_manager');
+        $this->userManager = $userManager;
+        $this->om = $om;
     }
 
 
