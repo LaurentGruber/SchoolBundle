@@ -3,6 +3,7 @@
 namespace Laurent\SchoolBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Claroline\CoreBundle\Entity\User;
 
 /**
  * @ORM\Entity(repositoryClass="Laurent\SchoolBundle\Repository\ClasseRepository")
@@ -194,6 +195,30 @@ class Classe
     public function getGroup()
     {
         return $this->Group;
+    }
+
+    /**
+     * @param \Laurent\SchoolBundle\Entity\User $eleves
+     */
+    public function setEleves($eleves)
+    {
+        $this->eleves = $eleves;
+    }
+
+    /**
+     * @return \Laurent\SchoolBundle\Entity\User
+     */
+    public function getEleves()
+    {
+        return $this->eleves;
+    }
+
+    /**
+     * @param User $user
+     */
+    public function addEleves(User $user)
+    {
+        $this->eleves[] = $user;
     }
 
 }

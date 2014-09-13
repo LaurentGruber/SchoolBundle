@@ -123,13 +123,11 @@ class AdminSchoolController extends Controller
                         $nameRoleProf = 'ROLE_WS_PROF_'.$workspace->getGuid();
                         $nameRoleEleve = 'ROLE_WS_ELEVE_'.$workspace->getGuid();
                         $roleProf = $this->roleManager->createWorkspaceRole($nameRoleProf, 'Prof', $workspace, $isReadOnly = True);
-                        #$tool = $this->toolManager->getToolById(1);
-                        #$this->toolManager->addRole($tool, $roleProf, $workspace);
                         $roleEleve = $this->roleManager->createWorkspaceRole($nameRoleEleve, 'Élève', $workspace, $isReadOnly = True);
-                        #$tool = $this->toolManager->getToolById(1);
-                        #$this->toolManager->addRole($tool, $roleEleve, $workspace);
-
-
+                        $this->om->forceFlush();
+                        $tool = $this->toolManager->getToolById(1);
+                        $this->toolManager->addRole($tool, $roleProf, $workspace);
+                        $this->toolManager->addRole($tool, $roleEleve, $workspace);
 
                         $group = new Group();
                         $group->setName($code);
@@ -177,8 +175,13 @@ class AdminSchoolController extends Controller
      */
     public function adminSchoolImportElevesInClassesAction(Request $request)
     {
-/*        $em = $this->get('doctrine')->getManager();
         $this->checkOpen();
+        $em = $this->get('doctrine')->getManager();
+        $om = $this->container->get('claroline.persistence.object_manager');
+        $classeRepo = $em->getRepository('Laurent\SchoolBundle\Entity\Classe');
+        $this->workspaceRepo = $om->getRepository('ClarolineCoreBundle:Workspace\Workspace');
+        $this->roleManager = $this->container->get('claroline.manager.role_manager');
+        $this->roleRepo = $om->getRepository('ClarolineCoreBundle:Role');
 
         $form = $this->createFormBuilder()
             ->add('fichier', 'file', array('label' => 'Fichier CSV'))
@@ -195,43 +198,48 @@ class AdminSchoolController extends Controller
                 $file = fopen($fichier->getPathname(), 'r');
                 $this->om->startFlushSuite();
 
-                while (($elevesCsv = fgetcsv($file)) !== FALSE) {
+                while (($elevesCsv = fgetcsv($file)) !== FALSE && is_array($elevesCsv) && count($elevesCsv) === 2) {
                     $username = $elevesCsv[0];
-                    $classe = $em->findOneByName($elevesCsv[1]);
+                    $classe = $classeRepo->findOneByCode($elevesCsv[1]);
+                    $workspace = $classe->getWorkspace();
+                    $roleEleve = $this->roleRepo->findRoleByWorkspaceCodeAndTranslationKey($workspace->getCode(), 'Élève');
 
-                    if (!$this->userManager->getUserByUsername($username) ){
+                    //throw new \Exception($this->userManager->getUserByUsername($username)->getId());
+
+                    if ($this->userManager->getUserByUsername($username) ){
                         $user = $this->userManager->getUserByUsername($username);
+                        $classe->addEleves($user);
+                        $this->roleManager->associateRole($user, $roleEleve);
+                        $em->persist($classe);
 
-
-
+                        $messages[] = "<b>L'élève $username a été ajouté à la classe.</b>";
                     }
 
                     else {
-                        $messages[] = "<b>L'élève $user n'existe pas il faut d'abord le créer avant de l'ajouter à sa classe.</b>";
+                        $messages[] = "<b>L'élève $username n'existe pas il faut d'abord le créer avant de l'ajouter à sa classe.</b>";
                     }
 
                 }
 
                 $this->om->endFlushSuite();
+
                 fclose($file);
                 $content = $this->renderView('LaurentSchoolBundle::adminSchoolImportView.html.twig',
                     array('form' => $form->createView(),
                         'titre' => 'classes',
-                        'action' => $this->generateUrl('laurentAdminSchoolImportClasses'),
+                        'action' => $this->generateUrl('laurentAdminSchoolImportElevesInClasses'),
                         'messages' => $messages
                     ));
 
                 return new Response($content);
 
             }
-
-            return array('form' => $form->createView(),
-                'titre' => 'classes',
-                'action' => $this->generateUrl('laurentAdminSchoolImportElevesInClasses'),
-                'messages' => ''
-            );
-
-        }*/
+        }
+        return array('form' => $form->createView(),
+            'titre' => 'classes',
+            'action' => $this->generateUrl('laurentAdminSchoolImportElevesInClasses'),
+            'messages' => ''
+        );
     }
 
     private function checkOpen()

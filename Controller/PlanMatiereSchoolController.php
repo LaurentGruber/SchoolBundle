@@ -291,16 +291,17 @@ class PlanMatiereSchoolController extends Controller
     public function profUsersListAction(User $user, $page, $search)
     {
         $trimmedSearch = trim($search);
-        #$group = $this->groupRepo->findOneByName('Prof');
-        $group = $this->groupRepo->findOneBy(array('id' => '1'));
+        $group = $this->groupRepo->findOneByName('Prof');
+        #throw new \Exception($group->getName());
+        #$group = $this->groupRepo->findOneBy(array('id' => '1'));
         #$logger = $this->get('logger');
         #$logger->info('Local variables', get_defined_vars());
 
 
         if ($user->hasRole('ROLE_PROF') or ($user->hasRole('ROLE_ADMIN'))) {
             if ($trimmedSearch === '') {
-                #$users = $this->userManager->getUsersByGroup($group ,$page);
-                $users = $this->userManager->getAllUsers($page, $max = 50);
+                $users = $this->userManager->getUsersByGroup($group ,$page);
+                #$users = $this->userManager->getAllUsers($page, $max = 50);
             } else {
                 $users = $this->userManager
                     ->getAllUsersBySearch($page, $trimmedSearch);

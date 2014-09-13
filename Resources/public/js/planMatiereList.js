@@ -28,7 +28,7 @@ function closeFormModal()
         });
     });
 
-$('.profListButton').on('click', function () {
+$('body').on('click', '.profListButton', function () {
     $.ajax({
         url: Routing.generate(
             'laurent_plan_matiere_list_prof'
