@@ -16,6 +16,7 @@ use Claroline\CoreBundle\Manager\RoleManager;
 use Claroline\CoreBundle\Manager\UserManager;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Validator\Constraints\True;
 
 
 class AdminSchoolController extends Controller
@@ -85,6 +86,8 @@ class AdminSchoolController extends Controller
         $templateDir=$this->container->getParameter('claroline.param.templates_directory');
         $this->workspaceManager = $this->container->get('claroline.manager.workspace_manager');
         $this->workspaceRepo = $om->getRepository('ClarolineCoreBundle:Workspace\Workspace');
+        $this->rightsManager = $this->container->get('claroline.manager.rights_manager');
+        $this->ressourceNodeRepo = $om->getRepository('ClarolineCoreBundle:Resource\ResourceNode');
 
 
         $form = $this->createFormBuilder()
@@ -102,7 +105,7 @@ class AdminSchoolController extends Controller
                 $file = fopen($fichier->getPathname(), 'r');
                 $om->startFlushSuite();
 
-                while (($classeCsv = fgetcsv($file)) !== FALSE) {
+                while (($classeCsv = fgetcsv($file)) !== FALSE && is_array($classeCsv) && count($classeCsv) === 4) {
                     $code = $classeCsv[0];
                     $name = $classeCsv[1];
                     $degre = $classeCsv[2];
@@ -125,9 +128,42 @@ class AdminSchoolController extends Controller
                         $roleProf = $this->roleManager->createWorkspaceRole($nameRoleProf, 'Prof', $workspace, $isReadOnly = True);
                         $roleEleve = $this->roleManager->createWorkspaceRole($nameRoleEleve, 'Élève', $workspace, $isReadOnly = True);
                         $this->om->forceFlush();
-                        $tool = $this->toolManager->getToolById(1);
-                        $this->toolManager->addRole($tool, $roleProf, $workspace);
-                        $this->toolManager->addRole($tool, $roleEleve, $workspace);
+
+                        $toolHome = $this->toolManager->getOneToolByName('home');
+                        $this->toolManager->addRole($toolHome, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolHome, $roleEleve, $workspace);
+                        $toolRessource = $this->toolManager->getOneToolByName('resource_manager');
+                        $this->toolManager->addRole($toolRessource, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolRessource, $roleEleve, $workspace);
+                        $toolAgenda = $this->toolManager->getOneToolByName('agenda');
+                        $this->toolManager->addRole($toolAgenda, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolAgenda, $roleEleve, $workspace);
+//                        $toolMyBadges = $this->toolManager->getOneToolByName('my_badges');
+//                        $this->toolManager->addRole($toolMyBadges, $roleProf, $workspace);
+//                        $this->toolManager->addRole($toolMyBadges, $roleEleve, $workspace);
+                        $toolActivity = $this->toolManager->getOneToolByName('claroline_activity_tool');
+                        $this->toolManager->addRole($toolActivity, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolActivity, $roleEleve, $workspace);
+
+                        $toolUsers = $this->toolManager->getOneToolByName('users');
+                        $this->toolManager->addRole($toolUsers, $roleProf, $workspace);
+//                        $toolBadges = $this->toolManager->getOneToolByName('badges');
+//                        $this->toolManager->addRole($toolBadges, $roleProf, $workspace);
+//                        $toolQuestions = $this->toolManager->getOneToolByName('ujm_questions');
+//                        $this->toolManager->addRole($toolQuestions, $roleProf, $workspace);
+                        $toolParcours = $this->toolManager->getOneToolByName('innova_path');
+                        $this->toolManager->addRole($toolParcours, $roleProf, $workspace);
+
+                        $node = $this->ressourceNodeRepo->findWorkspaceRoot($workspace);
+                        $this->rightsManager->editPerms(1, $roleEleve, $node, $isRecursive = True);
+
+                        $this->rightsManager->editPerms(31, $roleProf, $node, $isRecursive = True);
+
+                        //$ids = array(1);
+                        //$resourceTypes = $ids === null ?
+                        //    array() :
+                        //    $this->om->findByIds('ClarolineCoreBundle:Resource\ResourceType', array_keys($ids));
+                        //$this->rightsManager->editCreationRights($resourceTypes, $roleProf, $node, $isRecursive = True);
 
                         $group = new Group();
                         $group->setName($code);
@@ -200,7 +236,8 @@ class AdminSchoolController extends Controller
 
                 while (($elevesCsv = fgetcsv($file)) !== FALSE && is_array($elevesCsv) && count($elevesCsv) === 2) {
                     $username = $elevesCsv[0];
-                    $classe = $classeRepo->findOneByCode($elevesCsv[1]);
+                    $classeCode = $elevesCsv[1];
+                    $classe = $classeRepo->findOneByCode($classeCode);
                     $workspace = $classe->getWorkspace();
                     $roleEleve = $this->roleRepo->findRoleByWorkspaceCodeAndTranslationKey($workspace->getCode(), 'Élève');
 
@@ -212,11 +249,11 @@ class AdminSchoolController extends Controller
                         $this->roleManager->associateRole($user, $roleEleve);
                         $em->persist($classe);
 
-                        $messages[] = "<b>L'élève $username a été ajouté à la classe.</b>";
+                        $messages[] = "<b>L'élève $username a été ajouté à la classe $classeCode.</b>";
                     }
 
                     else {
-                        $messages[] = "<b>L'élève $username n'existe pas il faut d'abord le créer avant de l'ajouter à sa classe.</b>";
+                        $messages[] = "<b>L'élève $username n'existe pas il faut d'abord le créer avant de l'ajouter à sa classe $classeCode.</b>";
                     }
 
                 }
