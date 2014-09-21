@@ -162,6 +162,19 @@ class AdminSchoolController extends Controller
 
                         $resourceTypes = array();
                         $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('file');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('directory');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('text');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('resource_shortcut');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('icap_wiki');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('claroline_web_resource');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('claroline_announcement_aggregate');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('claroline_forum');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('icap_blog');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('icap_lesson');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('icap_dropzone');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('ujm_exercise');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('innova_path');
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('activity');
                         $this->rightsManager->editCreationRights($resourceTypes, $roleProf, $node, $isRecursive = True);
 
                         $group = new Group();
@@ -236,13 +249,13 @@ class AdminSchoolController extends Controller
                 while (($elevesCsv = fgetcsv($file)) !== FALSE && is_array($elevesCsv) && count($elevesCsv) === 2) {
                     $username = $elevesCsv[0];
                     $classeCode = $elevesCsv[1];
-                    $classe = $classeRepo->findOneByCode($classeCode);
-                    $workspace = $classe->getWorkspace();
-                    $roleEleve = $this->roleRepo->findRoleByWorkspaceCodeAndTranslationKey($workspace->getCode(), 'Élève');
 
                     //throw new \Exception($this->userManager->getUserByUsername($username)->getId());
 
-                    if ($this->userManager->getUserByUsername($username) ){
+                    if ($this->userManager->getUserByUsername($username) && $classe = $classeRepo->findOneByCode($classeCode)){
+                        $workspace = $classe->getWorkspace();
+                        $roleEleve = $this->roleRepo->findRoleByWorkspaceCodeAndTranslationKey($workspace->getCode(), 'Élève');
+
                         $user = $this->userManager->getUserByUsername($username);
                         $classe->addEleves($user);
                         $this->roleManager->associateRole($user, $roleEleve);
