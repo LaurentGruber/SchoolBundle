@@ -42,7 +42,7 @@ class PlanMatiere
     private $matiere;
 
     /**
-     * @ORM\Column()
+     * @ORM\Column(nullable=true)
      */
     private $refProgramme;
 

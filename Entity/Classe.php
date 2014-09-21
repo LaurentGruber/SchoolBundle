@@ -44,11 +44,13 @@ class Classe
 
     /**
      * @ORM\OneToOne(targetEntity="Claroline\CoreBundle\Entity\Workspace\Workspace")
+     * @ORM\JoinColumn(onDelete="SET NULL", nullable=true)
      */
     private $Workspace;
 
     /**
      * @ORM\OneToOne(targetEntity="Claroline\CoreBundle\Entity\Group")
+     * @ORM\JoinColumn(onDelete="SET NULL", nullable=true)
      */
     private $Group;
 

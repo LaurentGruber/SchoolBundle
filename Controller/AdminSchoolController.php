@@ -88,6 +88,7 @@ class AdminSchoolController extends Controller
         $this->workspaceRepo = $om->getRepository('ClarolineCoreBundle:Workspace\Workspace');
         $this->rightsManager = $this->container->get('claroline.manager.rights_manager');
         $this->ressourceNodeRepo = $om->getRepository('ClarolineCoreBundle:Resource\ResourceNode');
+        $this->ressourceManager = $this->container->get('claroline.manager.resource_manager');
 
 
         $form = $this->createFormBuilder()
@@ -138,32 +139,30 @@ class AdminSchoolController extends Controller
                         $toolAgenda = $this->toolManager->getOneToolByName('agenda');
                         $this->toolManager->addRole($toolAgenda, $roleProf, $workspace);
                         $this->toolManager->addRole($toolAgenda, $roleEleve, $workspace);
-//                        $toolMyBadges = $this->toolManager->getOneToolByName('my_badges');
-//                        $this->toolManager->addRole($toolMyBadges, $roleProf, $workspace);
-//                        $this->toolManager->addRole($toolMyBadges, $roleEleve, $workspace);
+                        //$toolMyBadges = $this->toolManager->getOneToolByName('my_badges');
+                        //$this->toolManager->addRole($toolMyBadges, $roleProf, $workspace);
+                        //$this->toolManager->addRole($toolMyBadges, $roleEleve, $workspace);
                         $toolActivity = $this->toolManager->getOneToolByName('claroline_activity_tool');
                         $this->toolManager->addRole($toolActivity, $roleProf, $workspace);
                         $this->toolManager->addRole($toolActivity, $roleEleve, $workspace);
 
                         $toolUsers = $this->toolManager->getOneToolByName('users');
                         $this->toolManager->addRole($toolUsers, $roleProf, $workspace);
-//                        $toolBadges = $this->toolManager->getOneToolByName('badges');
-//                        $this->toolManager->addRole($toolBadges, $roleProf, $workspace);
-//                        $toolQuestions = $this->toolManager->getOneToolByName('ujm_questions');
-//                        $this->toolManager->addRole($toolQuestions, $roleProf, $workspace);
+                        //$toolBadges = $this->toolManager->getOneToolByName('badges');
+                        //$this->toolManager->addRole($toolBadges, $roleProf, $workspace);
+
                         $toolParcours = $this->toolManager->getOneToolByName('innova_path');
                         $this->toolManager->addRole($toolParcours, $roleProf, $workspace);
 
                         $node = $this->ressourceNodeRepo->findWorkspaceRoot($workspace);
                         $this->rightsManager->editPerms(1, $roleEleve, $node, $isRecursive = True);
-
                         $this->rightsManager->editPerms(31, $roleProf, $node, $isRecursive = True);
+                        $this->om->forceFlush();
 
-                        //$ids = array(1);
-                        //$resourceTypes = $ids === null ?
-                        //    array() :
-                        //    $this->om->findByIds('ClarolineCoreBundle:Resource\ResourceType', array_keys($ids));
-                        //$this->rightsManager->editCreationRights($resourceTypes, $roleProf, $node, $isRecursive = True);
+
+                        $resourceTypes = array();
+                        $resourceTypes[]=$this->ressourceManager->getResourceTypeByName('file');
+                        $this->rightsManager->editCreationRights($resourceTypes, $roleProf, $node, $isRecursive = True);
 
                         $group = new Group();
                         $group->setName($code);
