@@ -3,6 +3,7 @@
 namespace Laurent\SchoolBundle\Controller;
 
 use Claroline\CoreBundle\Persistence\ObjectManager;
+use Laurent\SchoolBundle\Entity\Matiere;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
@@ -289,6 +290,154 @@ class AdminSchoolController extends Controller
         return array('form' => $form->createView(),
             'titre' => 'classes',
             'action' => $this->generateUrl('laurentAdminSchoolImportElevesInClasses'),
+            'messages' => ''
+        );
+    }
+
+    /**
+     * @EXT\Route("/import/matieres", name="laurentAdminSchoolImportMatieres")
+     * @EXT\Template("LaurentSchoolBundle::adminSchoolImportView.html.twig")
+     */
+    public function adminSchoolImportMatieresAction(Request $request)
+    {
+        $this->checkOpen();
+        $em = $this->get('doctrine')->getManager();
+        //$om = $this->container->get('claroline.persistence.object_manager');
+        $matiereRepo = $em->getRepository('Laurent\SchoolBundle\Entity\Matiere');
+
+        $form = $this->createFormBuilder()
+            ->add('fichier', 'file', array('label' => 'Fichier CSV'))
+            ->add('envoyer', 'submit', array('attr' => array('class' => 'btn btn-primary')))
+            ->getForm()
+        ;
+
+        if ($request->getMethod() === 'POST') {
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted()) {
+                $messages = array();
+                $fichier = $form->get('fichier')->getNormData();
+                $file = fopen($fichier->getPathname(), 'r');
+                $this->om->startFlushSuite();
+
+                while (($matieresCsv = fgetcsv($file)) !== FALSE && is_array($matieresCsv) && count($matieresCsv) === 4) {
+                    $name = $matieresCsv[0];
+                    $officialName = $matieresCsv[1];
+                    $degre = $matieresCsv[2];
+                    $nbPeriode = $matieresCsv[3];
+                    $viewName = $name.'[D'.$degre.']'.'('.$nbPeriode.')';
+
+                    if (!$matiereRepo->findOneByviewName($viewName)){
+
+                        $matiere = new Matiere();
+                        $matiere->setName($name);
+                        $matiere->setOfficialName($officialName);
+                        $matiere->setDegre($degre);
+                        $matiere->setNbPeriode($nbPeriode);
+                        $matiere->setViewName($viewName);
+
+                        $em->persist($matiere);
+
+                        $messages[] = "<b>La matiere $name a été ajoutée.</b>";
+                    }
+
+                    else {
+                        $messages[] = "<b>La matière $viewName existe déjà.</b>";
+                    }
+
+                }
+
+                $this->om->endFlushSuite();
+
+                fclose($file);
+                $content = $this->renderView('LaurentSchoolBundle::adminSchoolImportView.html.twig',
+                    array('form' => $form->createView(),
+                        'titre' => 'matieres',
+                        'action' => $this->generateUrl('laurentAdminSchoolImportMatieres'),
+                        'messages' => $messages
+                    ));
+
+                return new Response($content);
+
+            }
+        }
+        return array('form' => $form->createView(),
+            'titre' => 'classes',
+            'action' => $this->generateUrl('laurentAdminSchoolImportMatieres'),
+            'messages' => ''
+        );
+    }
+
+    /**
+     * @EXT\Route("/import/profs", name="laurentAdminSchoolImportProfs")
+     * @EXT\Template("LaurentSchoolBundle::adminSchoolImportView.html.twig")
+     */
+    public function adminSchoolImportProfsAction(Request $request)
+    {
+        $this->checkOpen();
+        $em = $this->get('doctrine')->getManager();
+        $om = $this->container->get('claroline.persistence.object_manager');
+        $classeRepo = $em->getRepository('Laurent\SchoolBundle\Entity\Classe');
+        $this->workspaceRepo = $om->getRepository('ClarolineCoreBundle:Workspace\Workspace');
+        $this->roleManager = $this->container->get('claroline.manager.role_manager');
+        $this->roleRepo = $om->getRepository('ClarolineCoreBundle:Role');
+
+        $form = $this->createFormBuilder()
+            ->add('fichier', 'file', array('label' => 'Fichier CSV'))
+            ->add('envoyer', 'submit', array('attr' => array('class' => 'btn btn-primary')))
+            ->getForm()
+        ;
+
+        if ($request->getMethod() === 'POST') {
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted()) {
+                $messages = array();
+                $fichier = $form->get('fichier')->getNormData();
+                $file = fopen($fichier->getPathname(), 'r');
+                $this->om->startFlushSuite();
+
+                while (($profsCsv = fgetcsv($file)) !== FALSE && is_array($profsCsv) && count($profsCsv) === 3) {
+                    $username = $profsCsv[0];
+                    $classeCode = $profsCsv[1];
+                    $matiere = $profsCsv[2];
+
+                    //throw new \Exception($this->userManager->getUserByUsername($username)->getId());
+
+                    if ($this->userManager->getUserByUsername($username) && $classe = $classeRepo->findOneByCode($classeCode)){
+                        $workspace = $classe->getWorkspace();
+                        $roleProf = $this->roleRepo->findRoleByWorkspaceCodeAndTranslationKey($workspace->getCode(), 'Prof');
+
+                        $user = $this->userManager->getUserByUsername($username);
+                        $this->roleManager->associateRole($user, $roleProf);
+                        //$em->persist($classe);
+
+                        $messages[] = "<b>Le prof $username a été ajouté à la classe $classeCode pour la matiere $matiere.</b>";
+                    }
+
+                    else {
+                        $messages[] = "<b>Le prof $username n'existe pas il faut d'abord le créer avant de l'ajouter.</b>";
+                    }
+
+                }
+
+                $this->om->endFlushSuite();
+
+                fclose($file);
+                $content = $this->renderView('LaurentSchoolBundle::adminSchoolImportView.html.twig',
+                    array('form' => $form->createView(),
+                        'titre' => 'classes',
+                        'action' => $this->generateUrl('laurentAdminSchoolImportProfs'),
+                        'messages' => $messages
+                    ));
+
+                return new Response($content);
+
+            }
+        }
+        return array('form' => $form->createView(),
+            'titre' => 'classes',
+            'action' => $this->generateUrl('laurentAdminSchoolImportProfs'),
             'messages' => ''
         );
     }

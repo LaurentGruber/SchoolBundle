@@ -27,12 +27,22 @@ class Matiere
     private $name;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column()
+     */
+    private $officialName;
+
+    /**
+     * @ORM\Column()
+     */
+    private $viewName;
+
+    /**
+     * @ORM\Column(type="integer")
      */
     private $degre;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="integer")
      */
     private $nbPeriode;
 
@@ -144,7 +154,37 @@ class Matiere
         return $this->nbPeriode;
     }
 
+    /**
+     * @param mixed $officialName
+     */
+    public function setOfficialName($officialName)
+    {
+        $this->officialName = $officialName;
+    }
 
+    /**
+     * @return mixed
+     */
+    public function getOfficialName()
+    {
+        return $this->officialName;
+    }
+
+    /**
+     * @param mixed $viewName
+     */
+    public function setViewName($viewName)
+    {
+        $this->viewName = $viewName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getViewName()
+    {
+        return $this->viewName;
+    }
 
 
 }

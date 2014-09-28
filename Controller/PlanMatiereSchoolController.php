@@ -79,7 +79,7 @@ class PlanMatiereSchoolController extends Controller
                      array(
                          'label' => 'Matière',
                          'class' => 'LaurentSchoolBundle:Matiere',
-                         'property' => 'name',
+                         'property' => 'viewName',
                          'required' => false
                      )
                 )
@@ -113,7 +113,7 @@ class PlanMatiereSchoolController extends Controller
                 array(
                     'label' => 'Matière',
                     'class' => 'LaurentSchoolBundle:Matiere',
-                    'property' => 'name',
+                    'property' => 'viewName',
                     'required' => false
                 )
             )
