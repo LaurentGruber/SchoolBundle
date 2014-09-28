@@ -129,30 +129,32 @@ class AdminSchoolController extends Controller
                         $roleProf = $this->roleManager->createWorkspaceRole($nameRoleProf, 'Prof', $workspace, $isReadOnly = True);
                         $roleEleve = $this->roleManager->createWorkspaceRole($nameRoleEleve, 'Élève', $workspace, $isReadOnly = True);
                         $this->om->forceFlush();
+                        $this->toolManager->addMissingWorkspaceTools($workspace);
+                        $this->om->forceFlush();
+                        $toolHome = $this->toolManager->getOneToolByName('home');
+                        $this->toolManager->addRole($toolHome, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolHome, $roleEleve, $workspace);
+                        $toolRessource = $this->toolManager->getOneToolByName('resource_manager');
+                        $this->toolManager->addRole($toolRessource, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolRessource, $roleEleve, $workspace);
+                        $toolAgenda = $this->toolManager->getOneToolByName('agenda');
+                        $this->toolManager->addRole($toolAgenda, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolAgenda, $roleEleve, $workspace);
+                        $toolMyBadges = $this->toolManager->getOneToolByName('my_badges');
+                        $this->toolManager->addRole($toolMyBadges, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolMyBadges, $roleEleve, $workspace);
+                        $toolActivity = $this->toolManager->getOneToolByName('claroline_activity_tool');
+                        $this->toolManager->addRole($toolActivity, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolActivity, $roleEleve, $workspace);
 
-                        //$toolHome = $this->toolManager->getOneToolByName('home');
-                        //$this->toolManager->addRole($toolHome, $roleProf, $workspace);
-                        //$this->toolManager->addRole($toolHome, $roleEleve, $workspace);
-                        //$toolRessource = $this->toolManager->getOneToolByName('resource_manager');
-                        //$this->toolManager->addRole($toolRessource, $roleProf, $workspace);
-                        //$this->toolManager->addRole($toolRessource, $roleEleve, $workspace);
-                        //$toolAgenda = $this->toolManager->getOneToolByName('agenda');
-                        //$this->toolManager->addRole($toolAgenda, $roleProf, $workspace);
-                        //$this->toolManager->addRole($toolAgenda, $roleEleve, $workspace);
-                        //$toolMyBadges = $this->toolManager->getOneToolByName('my_badges');
-                        //$this->toolManager->addRole($toolMyBadges, $roleProf, $workspace);
-                        //$this->toolManager->addRole($toolMyBadges, $roleEleve, $workspace);
-                        //$toolActivity = $this->toolManager->getOneToolByName('claroline_activity_tool');
-                        //$this->toolManager->addRole($toolActivity, $roleProf, $workspace);
-                        //$this->toolManager->addRole($toolActivity, $roleEleve, $workspace);
+                        $toolUsers = $this->toolManager->getOneToolByName('users');
+                        $this->toolManager->addRole($toolUsers, $roleProf, $workspace);
+                        $toolBadges = $this->toolManager->getOneToolByName('badges');
+                        $this->toolManager->addRole($toolBadges, $roleProf, $workspace);
 
-                        //$toolUsers = $this->toolManager->getOneToolByName('users');
-                        //$this->toolManager->addRole($toolUsers, $roleProf, $workspace);
-                        //$toolBadges = $this->toolManager->getOneToolByName('badges');
-                        //$this->toolManager->addRole($toolBadges, $roleProf, $workspace);
+                        $toolParcours = $this->toolManager->getOneToolByName('innova_path');
 
-                        //$toolParcours = $this->toolManager->getOneToolByName('innova_path');
-                        //$this->toolManager->addRole($toolParcours, $roleProf, $workspace);
+                        $this->toolManager->addRole($toolParcours, $roleProf, $workspace);
 
                         $node = $this->ressourceNodeRepo->findWorkspaceRoot($workspace);
                         $this->rightsManager->editPerms(1, $roleEleve, $node, $isRecursive = True);
