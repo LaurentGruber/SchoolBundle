@@ -410,6 +410,8 @@ class AdminSchoolController extends Controller
 
                         $user = $this->userManager->getUserByUsername($username);
                         $this->roleManager->associateRole($user, $roleProf);
+
+                        
                         //$em->persist($classe);
 
                         $messages[] = "<b>Le prof $username a été ajouté à la classe $classeCode pour la matiere $matiere.</b>";
