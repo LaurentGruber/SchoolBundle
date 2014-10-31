@@ -3,13 +3,11 @@
 namespace Laurent\SchoolBundle\Controller;
 
 use Claroline\CoreBundle\Persistence\ObjectManager;
-use Laurent\SchoolBundle\Entity\Matiere;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
-use Laurent\SchoolBundle\Entity\Classe;
-use Claroline\CoreBundle\Entity\Group;
 use JMS\DiExtraBundle\Annotation as DI;
 use Claroline\CoreBundle\Library\Workspace\Configuration;
 use Claroline\CoreBundle\Manager\ToolManager;
@@ -18,6 +16,10 @@ use Claroline\CoreBundle\Manager\UserManager;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Validator\Constraints\True;
+use Laurent\SchoolBundle\Entity\Matiere;
+use Laurent\SchoolBundle\Entity\Classe;
+use Laurent\SchoolBundle\Entity\ProfMatiereGroup;
+use Claroline\CoreBundle\Entity\Group;
 
 
 class AdminSchoolController extends Controller
@@ -320,12 +322,13 @@ class AdminSchoolController extends Controller
                 $file = fopen($fichier->getPathname(), 'r');
                 $this->om->startFlushSuite();
 
-                while (($matieresCsv = fgetcsv($file)) !== FALSE && is_array($matieresCsv) && count($matieresCsv) === 4) {
+                while (($matieresCsv = fgetcsv($file)) !== FALSE && is_array($matieresCsv) && count($matieresCsv) === 5) {
                     $name = $matieresCsv[0];
                     $officialName = $matieresCsv[1];
                     $degre = $matieresCsv[2];
-                    $nbPeriode = $matieresCsv[3];
-                    $viewName = $name.'[D'.$degre.']'.'('.$nbPeriode.')';
+                    $anne = $matieresCsv[3];
+                    $nbPeriode = $matieresCsv[4];
+                    $viewName = $name.'[D'.$degre.']-['.$anne.']('.$nbPeriode.')';
 
                     if (!$matiereRepo->findOneByviewName($viewName)){
 
@@ -334,11 +337,12 @@ class AdminSchoolController extends Controller
                         $matiere->setOfficialName($officialName);
                         $matiere->setDegre($degre);
                         $matiere->setNbPeriode($nbPeriode);
+                        $matiere->setAnnee($anne);
                         $matiere->setViewName($viewName);
 
                         $em->persist($matiere);
 
-                        $messages[] = "<b>La matiere $name a été ajoutée.</b>";
+                        $messages[] = "<b>La matiere $viewName a été ajoutée.</b>";
                     }
 
                     else {
@@ -360,10 +364,95 @@ class AdminSchoolController extends Controller
                 return new Response($content);
 
             }
+            else {
+                return array('form' => $form->createView(),
+                    'titre' => 'classes',
+                    'action' => $this->generateUrl('laurentAdminSchoolImportMatieres'),
+                    'messages' => 'erreur'
+                );
+            }
         }
         return array('form' => $form->createView(),
             'titre' => 'classes',
             'action' => $this->generateUrl('laurentAdminSchoolImportMatieres'),
+            'messages' => ''
+        );
+    }
+
+    /**
+     * @EXT\Route("/import/profInMatiere", name="laurentAdminSchoolImportProfInMatiere")
+     * @EXT\Template("LaurentSchoolBundle::adminSchoolImportView.html.twig")
+     */
+    public function adminSchoolImportProfInMatiereAction(Request $request)
+    {
+        $this->checkOpen();
+        $em = $this->get('doctrine')->getManager();
+        $om = $this->container->get('claroline.persistence.object_manager');
+        $matiereRepo = $em->getRepository('Laurent\SchoolBundle\Entity\Matiere');
+        $groupRepo = $em->getRepository('Claroline\CoreBundle\Entity\Group');
+
+
+        $form = $this->createFormBuilder()
+            ->add('fichier', 'file', array('label' => 'Fichier CSV'))
+            ->add('envoyer', 'submit', array('attr' => array('class' => 'btn btn-primary')))
+            ->getForm()
+        ;
+
+        if ($request->getMethod() === 'POST') {
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted()) {
+                $messages = array();
+                $fichier = $form->get('fichier')->getNormData();
+                $file = fopen($fichier->getPathname(), 'r');
+                $this->om->startFlushSuite();
+
+                while (($profMatiereCsv = fgetcsv($file, 0, ";", '"')) !== FALSE && is_array($profMatiereCsv) && count($profMatiereCsv) === 3) {
+                    $username = $profMatiereCsv[0];
+                    $matiereName = $profMatiereCsv[1];
+                    $groupName = $profMatiereCsv[2];
+
+                    //throw new \Exception($this->userManager->getUserByUsername($username)->getId());
+
+                    if ($this->userManager->getUserByUsername($username)){
+
+                        $user = $this->userManager->getUserByUsername($username);
+                        $matiere = $matiereRepo->findOneByViewName($matiereName);
+                        $group = $groupRepo->findOneByName($groupName);
+
+                        $profMatiereGroup = new ProfMatiereGroup();
+                        $profMatiereGroup->setMatiere($matiere);
+                        $profMatiereGroup->setProf($user);
+                        $profMatiereGroup->setGroup($group);
+
+                        $em->persist($profMatiereGroup);
+
+                        $messages[] = "<b>Le prof $username donne $matiereName au groupe  $groupName.</b>";
+                    }
+
+                    else {
+                        $messages[] = "<b>erreur avec $username pour la matiere $matiereName et le groupe $groupName</b>";
+                    }
+
+                }
+
+                $this->om->endFlushSuite();
+
+                fclose($file);
+                $content = $this->renderView('LaurentSchoolBundle::adminSchoolImportView.html.twig',
+                    array('form' => $form->createView(),
+                        'titre' => 'classes',
+                        'action' => $this->generateUrl('laurentAdminSchoolImportProfInMatiere'),
+                        'messages' => $messages
+                    ));
+
+                return new Response($content);
+
+            }
+        }
+        return array('form' => $form->createView(),
+            'titre' => 'classes',
+            'action' => $this->generateUrl('laurentAdminSchoolImportProfInMatiere'),
             'messages' => ''
         );
     }

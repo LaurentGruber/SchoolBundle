@@ -10,9 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Matiere
 {
-    const DEGRE_1 = 1;
-    const DEGRE_2 = 2;
-    const DEGRE_3 = 3;
 
     /**
      * @ORM\Column(type="integer")
@@ -40,6 +37,11 @@ class Matiere
      * @ORM\Column(type="integer")
      */
     private $degre;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $annee;
 
     /**
      * @ORM\Column(type="integer")
@@ -84,26 +86,6 @@ class Matiere
     public function getDegre()
     {
         return $this->degre;
-    }
-
-    public function getDegreTranslationKey()
-    {
-        switch ($this->type) {
-            case self::DEGRE_1: return "degre1";
-            case self::DEGRE_2: return "degre2";
-            case self::DEGRE_3: return "degre3";
-            default: return "error";
-        }
-    }
-
-    public function getInputDegre()
-    {
-        switch ($this->type) {
-            case self::DEGRE_1: return "degre1";
-            case self::DEGRE_2: return "degre2";
-            case self::DEGRE_3: return "degre3";
-            default: return "error";
-        }
     }
 
     /**
@@ -184,6 +166,22 @@ class Matiere
     public function getViewName()
     {
         return $this->viewName;
+    }
+
+    /**
+     * @param mixed $annee
+     */
+    public function setAnnee($annee)
+    {
+        $this->annee = $annee;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAnnee()
+    {
+        return $this->annee;
     }
 
 

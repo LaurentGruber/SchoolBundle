@@ -7,9 +7,9 @@ use Claroline\CoreBundle\Entity\User;
 
 /**
  * @ORM\Entity()
- * @ORM\Table(name="laurent_school_prof_matiere_classe")
+ * @ORM\Table(name="laurent_school_prof_matiere_group")
  */
-class ProfMatiereClasse
+class ProfMatiereGroup
 {
     /**
      * @ORM\Column(type="integer")
@@ -27,10 +27,10 @@ class ProfMatiereClasse
 
     /**
      * @ORM\ManyToOne(
-     *      targetEntity="Laurent\SchoolBundle\Entity\Classe",
+     *      targetEntity="Claroline\CoreBundle\Entity\Group",
      * )
      */
-    private $classe;
+    private $group;
 
     /**
      * @ORM\ManyToOne(
@@ -39,22 +39,6 @@ class ProfMatiereClasse
      * )
      */
     private $prof;
-
-    /**
-     * @param mixed $classe
-     */
-    public function setClasse($classe)
-    {
-        $this->classe = $classe;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getClasse()
-    {
-        return $this->classe;
-    }
 
     /**
      * @param mixed $id
@@ -102,6 +86,22 @@ class ProfMatiereClasse
     public function getProf()
     {
         return $this->prof;
+    }
+
+    /**
+     * @param mixed $group
+     */
+    public function setGroup($group)
+    {
+        $this->group = $group;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGroup()
+    {
+        return $this->group;
     }
 
 
