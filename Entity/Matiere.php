@@ -39,7 +39,7 @@ class Matiere
     private $degre;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(nullable=true)
      */
     private $annee;
 

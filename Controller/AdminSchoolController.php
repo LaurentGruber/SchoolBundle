@@ -330,7 +330,7 @@ class AdminSchoolController extends Controller
                     $degre = $matieresCsv[2];
                     $anne = $matieresCsv[3];
                     $nbPeriode = $matieresCsv[4];
-                    $viewName = $name.'[D'.$degre.']-['.$anne.']('.$nbPeriode.')';
+                    $viewName = $name.'['.$anne.']('.$nbPeriode.')';
 
                     if (!$matiereRepo->findOneByviewName($viewName)){
 
