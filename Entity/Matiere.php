@@ -184,5 +184,9 @@ class Matiere
         return $this->annee;
     }
 
+    public function __toString()
+    {
+        return (string) $this->getOfficialName();
+    }
 
 }

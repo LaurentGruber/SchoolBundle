@@ -109,7 +109,7 @@ class AdminSchoolController extends Controller
                 $file = fopen($fichier->getPathname(), 'r');
                 $om->startFlushSuite();
 
-                while (($classeCsv = fgetcsv($file)) !== FALSE && is_array($classeCsv) && count($classeCsv) === 4) {
+                while (($classeCsv = fgetcsv($file , 0, ";", '"')) !== FALSE && is_array($classeCsv) && count($classeCsv) === 4) {
                     $code = $classeCsv[0];
                     $name = $classeCsv[1];
                     $degre = $classeCsv[2];
@@ -251,7 +251,7 @@ class AdminSchoolController extends Controller
                 $file = fopen($fichier->getPathname(), 'r');
                 $this->om->startFlushSuite();
 
-                while (($elevesCsv = fgetcsv($file)) !== FALSE && is_array($elevesCsv) && count($elevesCsv) === 2) {
+                while (($elevesCsv = fgetcsv($file, 0, ";", '"')) !== FALSE && is_array($elevesCsv) && count($elevesCsv) === 2) {
                     $username = $elevesCsv[0];
                     $classeCode = $elevesCsv[1];
 
@@ -260,10 +260,12 @@ class AdminSchoolController extends Controller
                     if ($this->userManager->getUserByUsername($username) && $classe = $classeRepo->findOneByCode($classeCode)){
                         $workspace = $classe->getWorkspace();
                         $roleEleve = $this->roleRepo->findRoleByWorkspaceCodeAndTranslationKey($workspace->getCode(), 'Élève');
+                        $group = $classe->getGroup();
 
                         $user = $this->userManager->getUserByUsername($username);
                         $classe->addEleves($user);
                         $this->roleManager->associateRole($user, $roleEleve);
+                        $group->addUser($user);
                         $em->persist($classe);
 
                         $messages[] = "<b>L'élève $username a été ajouté à la classe $classeCode.</b>";
@@ -322,7 +324,7 @@ class AdminSchoolController extends Controller
                 $file = fopen($fichier->getPathname(), 'r');
                 $this->om->startFlushSuite();
 
-                while (($matieresCsv = fgetcsv($file)) !== FALSE && is_array($matieresCsv) && count($matieresCsv) === 5) {
+                while (($matieresCsv = fgetcsv($file, 0, ";", '"')) !== FALSE && is_array($matieresCsv) && count($matieresCsv) === 5) {
                     $name = $matieresCsv[0];
                     $officialName = $matieresCsv[1];
                     $degre = $matieresCsv[2];
@@ -486,7 +488,7 @@ class AdminSchoolController extends Controller
                 $file = fopen($fichier->getPathname(), 'r');
                 $this->om->startFlushSuite();
 
-                while (($profsCsv = fgetcsv($file)) !== FALSE && is_array($profsCsv) && count($profsCsv) === 3) {
+                while (($profsCsv = fgetcsv($file, 0, ";", '"')) !== FALSE && is_array($profsCsv) && count($profsCsv) === 3) {
                     $username = $profsCsv[0];
                     $classeCode = $profsCsv[1];
                     $matiere = $profsCsv[2];
