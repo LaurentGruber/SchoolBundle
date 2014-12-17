@@ -57,6 +57,11 @@ class Matiere
     private $planMatiere;
 
     /**
+     * @ORM\Column()
+     */
+    private $color;
+
+    /**
      * @param mixed $planMatiere
      */
     public function setPlanMatiere($planMatiere)
@@ -182,6 +187,22 @@ class Matiere
     public function getAnnee()
     {
         return $this->annee;
+    }
+
+    /**
+     * @param mixed $color
+     */
+    public function setColor($color)
+    {
+        $this->color = $color;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getColor()
+    {
+        return $this->color;
     }
 
     public function __toString()
