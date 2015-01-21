@@ -5,3 +5,5 @@ laurent_admin_school_controller:
 laurent_plan_matiere_controller:
     resource: "@LaurentSchoolBundle/Controller/PlanMatiereSchoolController.php"
     type:     annotation
+
+
