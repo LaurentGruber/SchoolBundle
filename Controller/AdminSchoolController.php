@@ -13,7 +13,7 @@ use Claroline\CoreBundle\Library\Workspace\Configuration;
 use Claroline\CoreBundle\Manager\ToolManager;
 use Claroline\CoreBundle\Manager\RoleManager;
 use Claroline\CoreBundle\Manager\UserManager;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Validator\Constraints\True;
 use Laurent\SchoolBundle\Entity\Matiere;
@@ -24,7 +24,7 @@ use Claroline\CoreBundle\Entity\Group;
 
 class AdminSchoolController extends Controller
 {
-    private $sc;
+    private $authorization;
     private $toolManager;
     private $roleManager;
     private $userManager;
@@ -32,25 +32,25 @@ class AdminSchoolController extends Controller
 
     /**
      * @DI\InjectParams({
-     *      "sc"                 = @DI\Inject("security.context"),
-     *      "toolManager"        = @DI\Inject("claroline.manager.tool_manager"),
-     *      "roleManager"        = @DI\Inject("claroline.manager.role_manager"),
-     *      "userManager"        = @DI\Inject("claroline.manager.user_manager"),
-     *      "om"                 = @DI\Inject("claroline.persistence.object_manager")
+     *     "authorization" = @DI\Inject("security.authorization_checker"),
+     *     "toolManager"   = @DI\Inject("claroline.manager.tool_manager"),
+     *     "roleManager"   = @DI\Inject("claroline.manager.role_manager"),
+     *     "userManager"   = @DI\Inject("claroline.manager.user_manager"),
+     *     "om"            = @DI\Inject("claroline.persistence.object_manager")
      * })
      */
 
     public function __construct(
-        SecurityContextInterface $sc,
+        AuthorizationCheckerInterface $authorization,
         ToolManager $toolManager,
         RoleManager $roleManager,
         UserManager $userManager,
         ObjectManager $om
     )
     {
-        $this->sc                 = $sc;
-        $this->toolManager        = $toolManager;
-        $this->roleManager        = $roleManager;
+        $this->authorization = $authorization;
+        $this->toolManager = $toolManager;
+        $this->roleManager = $roleManager;
         $this->workspaceAdminTool = $this->toolManager->getAdminToolByName('laurent_school_admin_tool');
         $this->userManager = $userManager;
         $this->om = $om;
@@ -537,7 +537,7 @@ class AdminSchoolController extends Controller
 
     private function checkOpen()
     {
-        if ($this->sc->isGranted('OPEN', $this->workspaceAdminTool)) {
+        if ($this->authorization->isGranted('OPEN', $this->workspaceAdminTool)) {
             return true;
         }
 
