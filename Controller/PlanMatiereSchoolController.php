@@ -11,7 +11,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 use Claroline\CoreBundle\Manager\UserManager;
@@ -20,23 +21,31 @@ use Claroline\CoreBundle\Manager\UserManager;
 class PlanMatiereSchoolController extends Controller
 {
     private $om;
-    private $sc;
+    private $authorization;
+    private $tokenStorage;
     private $userManager;
 
     /**
      * @DI\InjectParams({
-     *      "om"              = @DI\Inject("claroline.persistence.object_manager"),
-     *      "userManager"        = @DI\Inject("claroline.manager.user_manager"),
-     *      "sc"                 = @DI\Inject("security.context")
+     *     "om"            = @DI\Inject("claroline.persistence.object_manager"),
+     *     "userManager"   = @DI\Inject("claroline.manager.user_manager"),
+     *     "authorization" = @DI\Inject("security.authorization_checker"),
+     *     "tokenStorage"  = @DI\Inject("security.token_storage")
      * })
      */
 
-    public function __construct(ObjectManager $om, SecurityContextInterface $sc, UserManager $userManager)
+    public function __construct(
+        ObjectManager $om,
+        AuthorizationCheckerInterface $authorization,
+        TokenStorageInterface $tokenStorage,
+        UserManager $userManager
+    )
     {
-        $this->om                 = $om;
-        $this->sc                 = $sc;
-        $this->userManager        = $userManager;
-        $this->groupRepo          = $om->getRepository('ClarolineCoreBundle:Group');
+        $this->om = $om;
+        $this->authorization = $authorization;
+        $this->tokenStorage = $tokenStorage;
+        $this->userManager = $userManager;
+        $this->groupRepo = $om->getRepository('ClarolineCoreBundle:Group');
     }
 
     /**
@@ -48,7 +57,7 @@ class PlanMatiereSchoolController extends Controller
     {
         $this->checkOpen();
         $plRepository = $this->getDoctrine()->getRepository('LaurentSchoolBundle:PlanMatiere');
-        $user = $this->sc->getToken()->getUser();
+        $user = $this->tokenStorage->getToken()->getUser();
         $plmatieres = $plRepository->findUserPlanMatiere($user);
 
         return array('plmatieres'=> $plmatieres);
@@ -314,7 +323,7 @@ class PlanMatiereSchoolController extends Controller
 
     private function checkOpen()
     {
-        if ($this->sc->isGranted('ROLE_PROF')) {
+        if ($this->authorization->isGranted('ROLE_PROF')) {
             return true;
         }
 
