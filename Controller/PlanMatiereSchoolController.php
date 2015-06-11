@@ -138,7 +138,7 @@ class PlanMatiereSchoolController extends Controller
             $planMatiere->setName($form["name"]->getData());
             $planMatiere->setMatiere($form["matiere"]->getData());
             $planMatiere->setRefProgramme($form["refProgramme"]->getData());
-            $user = $this->get('security.context')->getToken()->getUser();
+            $user = $this->tokenStorage->getToken()->getUser();
             $planMatiere->addProf($user);
             $em->persist($planMatiere);
             $em->flush();
