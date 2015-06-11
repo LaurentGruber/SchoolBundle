@@ -47,29 +47,6 @@ class PlanMatiere
     private $refProgramme;
 
     /**
-     * @ORM\ManyToOne(
-     * targetEntity="Claroline\CoreBundle\Entity\Competence\Competence",
-     * )
-     */
-    private $referentiel;
-
-    /**
-     * @param mixed $referentiel
-     */
-    public function setReferentiel($referentiel)
-    {
-        $this->referentiel = $referentiel;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getReferentiel()
-    {
-        return $this->referentiel;
-    }
-
-    /**
      * @param mixed $refProgramme
      */
     public function setRefProgramme($refProgramme)
